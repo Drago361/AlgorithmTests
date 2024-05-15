@@ -1,0 +1,14 @@
+C:\Users\alexf\C#\AlgorithmTests\bin\Debug\net8.0\AlgorithmTest1.exe
+C:\Users\alexf\C#\AlgorithmTests\bin\Debug\net8.0\AlgorithmTest1.deps.json
+C:\Users\alexf\C#\AlgorithmTests\bin\Debug\net8.0\AlgorithmTest1.runtimeconfig.json
+C:\Users\alexf\C#\AlgorithmTests\bin\Debug\net8.0\AlgorithmTest1.dll
+C:\Users\alexf\C#\AlgorithmTests\bin\Debug\net8.0\AlgorithmTest1.pdb
+C:\Users\alexf\C#\AlgorithmTests\obj\Debug\net8.0\AlgorithmTest1.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\alexf\C#\AlgorithmTests\obj\Debug\net8.0\AlgorithmTest1.AssemblyInfoInputs.cache
+C:\Users\alexf\C#\AlgorithmTests\obj\Debug\net8.0\AlgorithmTest1.AssemblyInfo.cs
+C:\Users\alexf\C#\AlgorithmTests\obj\Debug\net8.0\AlgorithmTest1.csproj.CoreCompileInputs.cache
+C:\Users\alexf\C#\AlgorithmTests\obj\Debug\net8.0\AlgorithmTest1.dll
+C:\Users\alexf\C#\AlgorithmTests\obj\Debug\net8.0\refint\AlgorithmTest1.dll
+C:\Users\alexf\C#\AlgorithmTests\obj\Debug\net8.0\AlgorithmTest1.pdb
+C:\Users\alexf\C#\AlgorithmTests\obj\Debug\net8.0\AlgorithmTest1.genruntimeconfig.cache
+C:\Users\alexf\C#\AlgorithmTests\obj\Debug\net8.0\ref\AlgorithmTest1.dll
