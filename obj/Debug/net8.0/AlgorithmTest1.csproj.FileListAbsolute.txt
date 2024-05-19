@@ -12,3 +12,4 @@ C:\Users\alexf\C#\AlgorithmTests\obj\Debug\net8.0\refint\AlgorithmTest1.dll
 C:\Users\alexf\C#\AlgorithmTests\obj\Debug\net8.0\AlgorithmTest1.pdb
 C:\Users\alexf\C#\AlgorithmTests\obj\Debug\net8.0\AlgorithmTest1.genruntimeconfig.cache
 C:\Users\alexf\C#\AlgorithmTests\obj\Debug\net8.0\ref\AlgorithmTest1.dll
+C:\Users\alexf\C#\AlgorithmTests\obj\Debug\net8.0\AlgorithmTest1.sourcelink.json
