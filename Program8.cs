@@ -1,10 +1,10 @@
-/*using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 
-class DataEntry //Columns format in the csv file
+class DataEntry
 {
     public DateTime TimeFrom { get; set; }
     public DateTime TimeTo { get; set; }
@@ -14,9 +14,9 @@ class DataEntry //Columns format in the csv file
 
 class HeatingOptimizer
 {
-    public List<DataEntry> WinterData { get; private set; } //Winter List
-    public List<DataEntry> SummerData { get; private set; } //Summer List
- 
+    public List<DataEntry> WinterData { get; private set; }
+    public List<DataEntry> SummerData { get; private set; }
+
     public void Read()
     {
         WinterData = new List<DataEntry>();
@@ -24,8 +24,8 @@ class HeatingOptimizer
 
         using (var reader = new StreamReader(@"datacsv.csv"))
         {
-            reader.ReadLine(); //Skip header with definitions
-            reader.ReadLine(); //Skip sub-header with more data definitions for the header
+            reader.ReadLine();
+            reader.ReadLine();
 
             while (!reader.EndOfStream)
             {
@@ -37,7 +37,7 @@ class HeatingOptimizer
         }
     }
 
-    private void StoreData(string[] values) //Thanks to the person who did the csv read file function in the main program
+    private void StoreData(string[] values)
     {
         var format = "dd/MM/yyyy HH.mm";
 
@@ -63,37 +63,30 @@ class HeatingOptimizer
         }
     }
 
-    public void Optimize(bool isWinter) //Optimizer 
+    public void Optimize(bool isWinter)
     {
         var data = isWinter ? WinterData : SummerData;
 
-        //Boiler specifications extracted from the Main program
-        double maxCapacityElectric = 8;  //MW
-        double maxCapacityGas = 5;       //MW
-        double maxCapacityOil = 4;       //MW
-        double maxCapacityGasMotor = 3.6;//MW
-        double maxElectricityGasMotor = 2.7; //MWh
+        double maxCapacityElectric = 8;  
+        double maxCapacityGas = 5;       
+        double maxCapacityOil = 4;       
+        double maxCapacityGasMotor = 3.6;
+        double maxElectricityGasMotor = 2.7;
 
-        double co2Electric = 0;          //kg/MWh
-        double co2Gas = 215;             //kg/MWh
-        double co2Oil = 265;             //kg/MWh
-        double co2GasMotor = 640;        //kg/MWh
+        double co2Electric = 0;          
+        double co2Gas = 215;             
+        double co2Oil = 265;            
+        double co2GasMotor = 640;        
 
-        //Production costs (DKK/MWh)
         double costElectric = 50;
         double costGas = 500;
         double costOil = 700;
         double costGasMotor = 1100;
 
-        //Gas Motor electricity production rate
-        double gasMotorElectricityOutputRate = 0.5; //MWh(electricity)/MWh(th)
-
-        //Optimizer variables
         double totalCost = 0;
         double totalCO2 = 0;
         double totalMoneySaved = 0;
         double totalRevenue = 0;
-        double maxCO2 = 500; //Maximum allowed CO2 emissions per period (example, can be changed)
 
         foreach (var entry in data)
         {
@@ -101,32 +94,20 @@ class HeatingOptimizer
             double periodCost = 0;
             double periodCO2 = 0;
             double periodElectricityProduced = 0;
-            double periodElectricityUsed = 0;
             double periodElectricityRevenue = 0;
-            double periodElectricityCostReduction = 0;
 
-            // Boiler selection based on cost and then on CO2 emissions
-            var boilers = new List<(double maxCapacity, double cost, double co2, string name, double electricityOutputRate)>
+            var boilers = new List<(double maxCapacity, double cost, double co2, string name)>
             {
-                (maxCapacityElectric, costElectric, co2Electric, "Electric", 0),
-                (maxCapacityGas, costGas, co2Gas, "Gas", 0),
-                (maxCapacityOil, costOil, co2Oil, "Oil", 0),
-                (maxCapacityGasMotor, costGasMotor, co2GasMotor, "Gas Motor", gasMotorElectricityOutputRate)
+                (maxCapacityElectric, costElectric, co2Electric, "Electric"),
+                (maxCapacityGas, costGas, co2Gas, "Gas"),
+                (maxCapacityOil, costOil, co2Oil, "Oil"),
+                (maxCapacityGasMotor, costGasMotor, co2GasMotor, "Gas Motor")
             };
 
-            //Sorting boilers by cost and then by CO2 emissions
             boilers = boilers.OrderBy(b => b.cost).ThenBy(b => b.co2).ToList();
 
-            // First we need to operate the gas motor in the background to produce electricity that we can then sell
             double gasMotorHeatProduction = Math.Min(remainingHeatDemand, maxCapacityGasMotor);
-            double gasMotorElectricityProduction = gasMotorHeatProduction * gasMotorElectricityOutputRate;
-
-            //Limit the electricity production to the maximum limit
-            if (gasMotorElectricityProduction > maxElectricityGasMotor)
-            {
-                gasMotorElectricityProduction = maxElectricityGasMotor;
-                gasMotorHeatProduction = gasMotorElectricityProduction / gasMotorElectricityOutputRate;
-            }
+            double gasMotorElectricityProduction = gasMotorHeatProduction * (maxElectricityGasMotor / maxCapacityGasMotor);
 
             periodElectricityProduced += gasMotorElectricityProduction;
             remainingHeatDemand -= gasMotorHeatProduction;
@@ -136,55 +117,40 @@ class HeatingOptimizer
             Console.WriteLine($"{entry.TimeFrom} to {entry.TimeTo}: Using Gas Motor Boiler");
             Console.WriteLine($"Allocated Heat: {gasMotorHeatProduction} MW, Cost: {gasMotorHeatProduction * costGasMotor} DKK, CO2: {gasMotorHeatProduction * co2GasMotor} kg, Electricity Output: {gasMotorElectricityProduction} MWh");
 
-            //Use remaining demand across other boilers
             foreach (var boiler in boilers)
             {
                 if (remainingHeatDemand <= 0)
                     break;
 
-                double allocatedHeat = Math.Min(remainingHeatDemand, boiler.maxCapacity);
-                double allocatedCost = allocatedHeat * boiler.cost;
-                double allocatedCO2 = allocatedHeat * boiler.co2;
-
                 if (boiler.name != "Gas Motor")
                 {
-                    periodCost += allocatedCost;
-                    periodCO2 += allocatedCO2;
+                    double allocatedHeat = Math.Min(remainingHeatDemand, boiler.maxCapacity);
+                    periodCost += allocatedHeat * boiler.cost;
+                    periodCO2 += allocatedHeat * boiler.co2;
                     remainingHeatDemand -= allocatedHeat;
 
                     Console.WriteLine($"{entry.TimeFrom} to {entry.TimeTo}: Using {boiler.name} Boiler");
-                    Console.WriteLine($"Allocated Heat: {allocatedHeat} MW, Cost: {allocatedCost} DKK, CO2: {allocatedCO2} kg");
+                    Console.WriteLine($"Allocated Heat: {allocatedHeat} MW, Cost: {allocatedHeat * boiler.cost} DKK, CO2: {allocatedHeat * boiler.co2} kg");
                 }
             }
 
-            //Use produced electricity for the electric boiler
-            double electricityUsedByElectricBoiler = Math.Min(periodElectricityProduced, maxCapacityElectric);
-            double electricBoilerCostReduction = electricityUsedByElectricBoiler * entry.ElectricityPrice;
-            periodCost -= electricBoilerCostReduction; //Reduce cost by the amount of electricity used internally
-            periodElectricityCostReduction += electricBoilerCostReduction;
-            periodElectricityUsed += electricityUsedByElectricBoiler;
-
-            //Calculate the revenue from selling remaining electricity
-            double electricitySold = periodElectricityProduced - electricityUsedByElectricBoiler;
-            double electricityRevenue = electricitySold * entry.ElectricityPrice;
+            double electricityRevenue = periodElectricityProduced * entry.ElectricityPrice;
             periodElectricityRevenue += electricityRevenue;
 
-            //Output the electricity usage and revenue information
-            Console.WriteLine($"Electricity Produced: {periodElectricityProduced} MWh, Electricity Used: {periodElectricityUsed} MWh, Electricity Sold: {electricitySold} MWh, Revenue from Sold Electricity: {electricityRevenue} DKK");
+            Console.WriteLine($"Electricity Produced: {periodElectricityProduced} MWh, Electricity Sold: {periodElectricityProduced} MWh, Revenue from Sold Electricity: {electricityRevenue} DKK");
 
             if (remainingHeatDemand > 0)
             {
                 Console.WriteLine($"Unable to meet full heat demand from {entry.TimeFrom} to {entry.TimeTo} within CO2 constraints.");
             }
 
-            totalMoneySaved += periodElectricityCostReduction;
+            totalMoneySaved += 0;
             totalRevenue += periodElectricityRevenue;
             periodCost -= periodElectricityRevenue;
             totalCost += periodCost;
             totalCO2 += periodCO2;
         }
 
-        //Outputing results
         Console.WriteLine($"Total Cost: {totalCost} DKK");
         Console.WriteLine($"Total CO2 Emissions: {totalCO2} kg");
         Console.WriteLine($"Total Money Saved from Using Gas Motor Electricity: {totalMoneySaved} DKK");
@@ -205,4 +171,3 @@ class HeatingOptimizer
         optimizer.Optimize(isWinter);
     }
 }
-*/
